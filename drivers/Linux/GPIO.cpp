@@ -29,19 +29,19 @@
 // Declare a single default instance
 GPIOClass GPIO = GPIOClass();
 
-GPIOClass::GPIOClass()
+GPIOClass::GPIOClass() :
+  lastPinNum(-1),
+  exportedPins(nullptr)
 {
 	FILE *f;
 	DIR* dp;
-	char file[64];
+	char file[NAME_MAX + sizeof("/sys/class/gpio/") + sizeof("/ngpio") + 1];
 
 	dp = opendir("/sys/class/gpio");
 	if (dp == NULL) {
-		logError("Could not open /sys/class/gpio directory");
-		exit(1);
+		logWarning("Could not open /sys/class/gpio directory\n");
+		return;
 	}
-
-	lastPinNum = 0;
 
 	while (true) {
 		dirent *de = readdir(dp);
@@ -50,7 +50,7 @@ GPIOClass::GPIOClass()
 		}
 
 		if (strncmp("gpiochip", de->d_name, 8) == 0) {
-			sprintf(file, "/sys/class/gpio/%s/base", de->d_name);
+			snprintf(file, sizeof(file) - 1, "/sys/class/gpio/%s/base", de->d_name);
 			f = fopen(file, "r");
 			int base;
 			if (fscanf(f, "%d", &base) == EOF) {
@@ -59,7 +59,7 @@ GPIOClass::GPIOClass()
 			}
 			fclose(f);
 
-			sprintf(file, "/sys/class/gpio/%s/ngpio", de->d_name);
+			snprintf(file, sizeof(file) - 1, "/sys/class/gpio/%s/ngpio", de->d_name);
 			f = fopen(file, "r");
 			int ngpio;
 			if (fscanf(f, "%d", &ngpio) == EOF) {
