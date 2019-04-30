@@ -50,6 +50,9 @@ bool hwInit(void)
 	while (!MY_SERIALDEVICE) {}
 #endif
 #endif
+#ifdef ARDUINO_ARCH_STM32
+	return true;
+#else // TODO: implement
 	if (EEPROM.init() == EEPROM_OK) {
 		uint16 cnt;
 		EEPROM.count(&cnt);
@@ -59,6 +62,7 @@ bool hwInit(void)
 		}
 		return true;
 	}
+#endif
 	return false;
 }
 
@@ -124,6 +128,7 @@ int8_t hwSleep(const uint8_t interrupt1, const uint8_t mode1, const uint8_t inte
 
 void hwRandomNumberInit(void)
 {
+#ifndef ARDUINO_ARCH_STM32
 	// use internal temperature sensor as noise source
 	adc_reg_map *regs = ADC1->regs;
 	regs->CR2 |= ADC_CR2_TSVREFE;
@@ -146,6 +151,9 @@ void hwRandomNumberInit(void)
 	}
 	randomSeed(seed);
 	regs->CR2 &= ~ADC_CR2_TSVREFE; // disable VREFINT and temp sensor
+#else
+	// TODO: implement
+#endif
 }
 
 bool hwUniqueID(unique_id_t *uniqueID)
@@ -156,6 +164,7 @@ bool hwUniqueID(unique_id_t *uniqueID)
 
 uint16_t hwCPUVoltage(void)
 {
+#ifndef ARDUINO_ARCH_STM32
 	adc_reg_map *regs = ADC1->regs;
 	regs->CR2 |= ADC_CR2_TSVREFE; // enable VREFINT and temp sensor
 	regs->SMPR1 =  ADC_SMPR1_SMP17; // sample rate for VREFINT ADC channel
@@ -164,6 +173,9 @@ uint16_t hwCPUVoltage(void)
 	const uint16_t vdd = adc_read(ADC1, 17);
 	regs->CR2 &= ~ADC_CR2_TSVREFE; // disable VREFINT and temp sensor
 	return (uint16_t)(1200u * 4096u / vdd);
+#else
+	return 330; // TODO: implement
+#endif
 }
 
 uint16_t hwCPUFrequency(void)
@@ -173,6 +185,7 @@ uint16_t hwCPUFrequency(void)
 
 int8_t hwCPUTemperature(void)
 {
+#ifndef ARDUINO_ARCH_STM32
 	adc_reg_map *regs = ADC1->regs;
 	regs->CR2 |= ADC_CR2_TSVREFE; // enable VREFINT and Temperature sensor
 	regs->SMPR1 |= ADC_SMPR1_SMP16 | ADC_SMPR1_SMP17;
@@ -185,6 +198,9 @@ int8_t hwCPUTemperature(void)
 	                                        17))) / 4.3 + 25.0);
 	regs->CR2 &= ~ADC_CR2_TSVREFE; // disable VREFINT and temp sensor
 	return (temp - MY_STM32F1_TEMPERATURE_OFFSET) / MY_STM32F1_TEMPERATURE_GAIN;
+#else
+	return 0; // TODO: implement
+#endif
 }
 
 uint16_t hwFreeMem(void)
