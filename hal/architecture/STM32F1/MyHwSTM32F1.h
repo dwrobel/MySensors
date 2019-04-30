@@ -20,7 +20,9 @@
 #ifndef MyHwSTM32F1_h
 #define MyHwSTM32F1_h
 
+#ifndef ARDUINO_ARCH_STM32
 #include <libmaple/iwdg.h>
+#endif
 #include <itoa.h>
 #include <EEPROM.h>
 #ifdef __cplusplus
@@ -51,11 +53,13 @@
 #endif
 
 // mapping
+#ifndef ARDUINO_ARCH_STM32
 #define snprintf_P snprintf
 #define vsnprintf_P vsnprintf
 #define strncpy_P strncpy
 #define printf_P printf
 #define yield()				  // not defined
+#endif
 
 #ifndef digitalPinToInterrupt
 #define digitalPinToInterrupt(__pin) (__pin)
@@ -64,8 +68,14 @@
 #define hwDigitalWrite(__pin, __value) digitalWrite(__pin, __value)
 #define hwDigitalRead(__pin) digitalRead(__pin)
 #define hwPinMode(__pin, __value) pinMode(__pin, __value)
+#ifndef ARDUINO_ARCH_STM32
 #define hwWatchdogReset() iwdg_feed()
 #define hwReboot() nvic_sys_reset()
+#else
+ // TODO: implement
+#define hwWatchdogReset()
+#define hwReboot()
+#endif
 #define hwMillis() millis()
 
 extern void serialEventRun(void) __attribute__((weak));
