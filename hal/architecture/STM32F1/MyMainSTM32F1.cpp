@@ -17,6 +17,7 @@
  * version 2 as published by the Free Software Foundation.
  */
 
+#ifndef ARDUINO_ARCH_STM32
 // Force init to be called *first*, i.e. before static object allocation.
 // Otherwise, statically allocated objects that need libmaple may fail.
 __attribute__(( constructor (101))) void premain()
@@ -24,6 +25,7 @@ __attribute__(( constructor (101))) void premain()
 	init();
 }
 
+// TODO: implement (or better report to Arduino_Core_STM32 project)
 // Initialize library and handle sketch functions like we want to
 int main(void)
 {
@@ -39,3 +41,4 @@ int main(void)
 	}
 	return 0;
 }
+#endif
