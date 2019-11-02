@@ -69,7 +69,14 @@
 bool hwInit(void);
 
 #define hwWatchdogReset() wdt_reset()
-#define hwReboot() wdt_enable(WDTO_15MS); while (1)
+#define hwReboot() \
+  do { \
+    __asm__ __volatile__ ( \
+      "clr r30\n" \
+      "clr r31\n" \
+      "ijmp\n" \
+    ); \
+  } while(0)
 #define hwMillis() millis()
 #define hwReadConfig(__pos) eeprom_read_byte((const uint8_t *)__pos)
 #define hwWriteConfig(__pos, __val) eeprom_update_byte((uint8_t *)__pos, (uint8_t)__val)
